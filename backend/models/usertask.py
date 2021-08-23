@@ -8,9 +8,8 @@ from backend import db
 
 users_tasks = db.Table(
     "users_tasks",
-    db.metadata,
-    db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
-    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id")),
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True),
 )
 
 
@@ -55,6 +54,6 @@ class Task(db.Model):
     content = db.Column(db.String)
     
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    author = relationship("User", secondary=author_id)
+    # author = relationship("User", secondary=author_id)
 
     assigned_users = relationship("User", secondary=users_tasks)
