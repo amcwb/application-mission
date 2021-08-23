@@ -2,7 +2,7 @@ import os
 import time
 
 import jwt
-from flask import session, request
+from flask import current_app, session, request
 from jwt.exceptions import InvalidTokenError
 
 
@@ -12,17 +12,17 @@ def gen_auth_token(user_id: int, expire_time: float = 0) -> str:
         expire_time = time.time() + 24 * 60 * 60
 
     return jwt.encode(
-        {"user_id": user_id}, os.environ.get("JWT_SECRET"), algorithm="HS256"
+        {"user_id": str(user_id)}, current_app.config.get("JWT_SECRET"), algorithm="HS256"
     )
 
 
 def check_auth_token(token: str) -> int:
     try:
-        result = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms=["HS256"])
+        result = jwt.decode(token, current_app.config.get("JWT_SECRET"), algorithms=["HS256"])
     except InvalidTokenError:
         return None
     else:
-        return result.get("user_id")
+        return int(result.get("user_id"))
 
 from . import app
 
