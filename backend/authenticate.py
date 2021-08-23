@@ -1,4 +1,4 @@
-import os
+from backend.models.usertask import User
 import time
 
 import jwt
@@ -22,7 +22,13 @@ def check_auth_token(token: str) -> int:
     except InvalidTokenError:
         return None
     else:
-        return int(result.get("user_id"))
+        # Check user exists
+        id = int(result.get("user_id"))
+        user = User.query.filter_by(id=id).first()
+        if user:
+            return user.id
+        
+        return None
 
 from . import app
 
