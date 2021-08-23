@@ -1,9 +1,3 @@
-__pycache__/
-*.pyc
-
-.env
-
-# From .gitignore by Android Studio
 *.iml
 .gradle
 /local.properties
@@ -19,10 +13,3 @@ __pycache__/
 .externalNativeBuild
 .cxx
 local.properties
-
-# .idea
-*.iws
-.idea/libraries
-.idea/tasks.xml
-.idea/vcs.xml
-.idea/workspace.xml
