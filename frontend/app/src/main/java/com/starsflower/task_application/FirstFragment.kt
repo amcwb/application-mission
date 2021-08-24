@@ -1,6 +1,5 @@
 package com.starsflower.task_application
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -28,7 +27,8 @@ class FirstFragment : Fragment() {
     private val taskDataViewModel: TaskDataViewModel by activityViewModels()
     private val client = OkHttpClient()
 
-    private lateinit var listView: ListView
+    private lateinit var tasksListView: ListView
+    private lateinit var notAssignedTasksListView: ListView
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -65,7 +65,8 @@ class FirstFragment : Fragment() {
     private val json = Json { ignoreUnknownKeys = true }
 
     private fun displayTaskList(view: View) {
-        this.listView = binding.tasksListView
+        tasksListView = binding.tasksListView
+        notAssignedTasksListView = binding.tasksNotAssignedListView
 
         // Load tasks
         val url = URL(dataViewModel.createURL(arrayOf("tasks", "list")))
@@ -85,30 +86,47 @@ class FirstFragment : Fragment() {
                 Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
             } else {
                 var data = json.decodeFromString<TaskList>(response.toString());
+                var assignedTasks = ArrayList<Task>()
+                var notAssignedTasks = ArrayList<Task>()
 
-                val listItems = arrayOfNulls<String>(data.tasks.size)
-
-                // Set data in list to task details
-                data.tasks.forEachIndexed { idx, it ->
-                    listItems[idx] = it.content
+                data.tasks.forEach { task ->
+                    if (task.assigned_users.contains(dataViewModel.user_id.value!!)) {
+                        assignedTasks.add(task)
+                    } else {
+                        notAssignedTasks.add(task)
+                    }
                 }
 
-                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listItems)
-                listView.adapter = adapter
-
-                // On click listener!
-                listView.setOnItemClickListener { _, _, position, _ ->
-                    val element = data.tasks[position]
-
-                    // Populate page
-                    taskDataViewModel.setTaskID(element.task_id)
-                    taskDataViewModel.setContent(element.content)
-                    taskDataViewModel.setAuthorID(element.author_id ?: 0)
-                    taskDataViewModel.setAssignedUsers(element.assigned_users)
-
-                    findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
-                }
+                setDataAndListener(assignedTasks, tasksListView)
+                setDataAndListener(notAssignedTasks, notAssignedTasksListView)
             }
         }
+    }
+
+    private fun setDataAndListener(tasks: ArrayList<Task>, listView: ListView) {
+        val listItems = arrayOfNulls<String>(tasks.size)
+
+        // Set data in list to task details
+        tasks.forEachIndexed { idx, it ->
+            listItems[idx] = it.content
+        }
+
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listItems)
+        listView.adapter = adapter
+
+        // On click listener!
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val element = tasks[position]
+
+            // Populate page
+            taskDataViewModel.setTaskID(element.task_id)
+            taskDataViewModel.setContent(element.content)
+            taskDataViewModel.setAuthorID(element.author_id ?: 0)
+            taskDataViewModel.setAssignedUsers(element.assigned_users)
+
+            findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
+        }
+
+        Utils.setListViewHeightBasedOnChildren(listView)
     }
 }

@@ -86,6 +86,7 @@ class LoginFragment : Fragment() {
                 } else {
                     var data = Json.decodeFromString<JWTResponse>(response.toString());
                     dataViewModel.setJWT(data.jwt)
+                    dataViewModel.setUserID(data.user_id)
                     Snackbar.make(view, "Logged in successfully", Snackbar.LENGTH_SHORT).show()
 
                     findNavController().navigate(R.id.action_LoginFragment_to_ListFragment)

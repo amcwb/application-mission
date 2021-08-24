@@ -13,12 +13,19 @@ class MainDataViewModel  : ViewModel() {
     private var _url: MutableLiveData<String> = MutableLiveData()
     val url: LiveData<String> get() = _url
 
+    private var _user_id: MutableLiveData<Int> = MutableLiveData()
+    val user_id: LiveData<Int> get() = _user_id
+
     fun setJWT(jwt: String) {
-        this._jwt.value = jwt
+        _jwt.value = jwt
     }
 
     fun setURL(url: String) {
-        this._url.value = url
+        _url.value = url
+    }
+
+    fun setUserID(userId: Int) {
+        _user_id.value = userId
     }
 
     fun createURL(path: Array<String>): String {

@@ -5,6 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import androidx.core.view.get
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
@@ -30,6 +33,9 @@ class SecondFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var users: Array<User>
+    private lateinit var listView: ListView
+
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
@@ -43,6 +49,7 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        getUserList()
         setDataFromTaskView()
         binding.saveTask.setOnClickListener {
             // Is this a new task or a saved task?
@@ -70,27 +77,105 @@ class SecondFragment : Fragment() {
         _binding = null
     }
 
+    // Ignore unknown keys until due time data is implemented
+    private val json = Json
+
+    private fun getUserList() {
+        listView = binding.usersListView
+        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE;
+
+        val url = URL(dataViewModel.createURL(arrayOf("users", "list")))
+        var request = Request.Builder()
+            .header("X-Authenticate", dataViewModel.jwt.value!!)
+            .url(url)
+            .get()
+            .build()
+
+        // Fetch tasks
+        this.client.newCall(request).execute().use { it
+            val response = it.body!!.string()
+
+            if (!it.isSuccessful) {
+                // Show error
+                var data = json.decodeFromString<Error>(response);
+
+                Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_LONG)
+                    .show()
+            } else {
+                var data = json.decodeFromString<UserList>(response);
+
+                val listItems = arrayOfNulls<String>(data.users.size)
+
+                // Set data in list to task details
+                users = data.users
+
+                data.users.forEachIndexed { idx, it ->
+                    listItems[idx] = it.name + " " + it.surname
+                }
+
+                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_multiple_choice, listItems)
+                listView.adapter = adapter
+
+                data.users.forEachIndexed { idx, it ->
+                    // Is user in assigned users?
+                    var isThisUserSelected = taskDataViewModel.assigned_users.value?.contains(it.user_id) == true
+
+                    listView.setItemChecked(idx, isThisUserSelected)
+                }
+
+                Utils.setListViewHeightBasedOnChildren(listView)
+            }
+        }
+    }
+
     private fun setDataFromTaskView() {
         // Set task content
         binding.editTaskContent.setText(taskDataViewModel.content.value ?: "Task Content")
     }
 
-    private fun createNewTaskRequest(view: View): Boolean {
+    private fun buildFormBody(): FormBody {
         // Get input
         val content = binding.editTaskContent.text.toString()
 
+        // Get user IDs selected, separated by comma
+        var assignedUserIds = ArrayList<Int>()
+        users.forEachIndexed { index, user ->
+            if (listView.isItemChecked(index)) {
+                assignedUserIds.add(user.user_id)
+            }
+        }
+
+        var formBody = FormBody.Builder()
+            .add("content", content)
+            .add(
+                "assigned_users",
+                assignedUserIds.joinToString(",")
+            )
+
+
+        // Patch if task ID
+        var taskID = taskDataViewModel.task_id.value
+        if (taskID != null) {
+            formBody.add("task_id", taskID!!.toString())
+        }
+
+        return formBody.build()
+    }
+
+    private fun buildRequest(url: URL): Request {
+        return Request.Builder()
+            .url(url)
+            .header("X-Authenticate", dataViewModel.jwt.value!!)
+            .post(buildFormBody())
+            .build()
+    }
+
+    private fun createNewTaskRequest(view: View): Boolean {
         // Create URL
         val url = URL(dataViewModel.createURL(arrayOf("tasks", "create")))
 
-        // Try login
-        var formBody = FormBody.Builder()
-            .add("content", content)
-            .build()
-
-        var request = Request.Builder()
-            .url(url)
-            .post(formBody)
-            .build()
+        // Try request
+        var request = buildRequest(url)
 
         this.client.newCall(request).execute().use { it
             val response = it.body!!.string()
@@ -113,23 +198,11 @@ class SecondFragment : Fragment() {
     }
 
     private fun updateCurrentTask(view: View): Boolean {
-        // Get input
-        var task_id = taskDataViewModel.task_id.value!!
-        val content = binding.editTaskContent.text.toString()
-
         // Create URL
         val url = URL(dataViewModel.createURL(arrayOf("tasks", "set_data")))
 
-        // Try login
-        var formBody = FormBody.Builder()
-            .add("task_id", task_id.toString())
-            .add("content", content)
-            .build()
-
-        var request = Request.Builder()
-            .url(url)
-            .post(formBody)
-            .build()
+        // Try request
+        var request = buildRequest(url)
 
         this.client.newCall(request).execute().use { it
             val response = it.body!!.string()

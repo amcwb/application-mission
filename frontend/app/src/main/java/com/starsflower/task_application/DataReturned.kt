@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class Error(val error: String)
 
 @Serializable
-data class JWTResponse(val jwt: String)
+data class JWTResponse(val jwt: String, val user_id: Int)
 
 @Serializable
 data class TaskID(
@@ -24,4 +24,17 @@ data class Task(
 @Serializable
 data class TaskList(
     val tasks: Array<Task>
+)
+
+@Serializable
+data class User(
+    val user_id: Int,
+    val name: String,
+    val surname: String,
+    val email: String?
+)
+
+@Serializable
+data class UserList(
+    val users: Array<User>
 )
