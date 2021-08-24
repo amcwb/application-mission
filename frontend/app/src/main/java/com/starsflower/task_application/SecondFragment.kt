@@ -52,22 +52,60 @@ class SecondFragment : Fragment() {
         getUserList()
         setDataFromTaskView()
         binding.saveTask.setOnClickListener {
-            // Is this a new task or a saved task?
+            onSavePress(view)
+        }
 
-            var success: Boolean
-            if (this.taskDataViewModel.task_id.value == null) {
-                // This is a new task!
-                success = createNewTaskRequest(view)
+        binding.deleteTask.setOnClickListener {
+            onDeletePress(view)
+        }
+    }
+
+    private fun onSavePress(view: View) {
+        // Is this a new task or a saved task?
+        var success: Boolean
+
+        if (this.taskDataViewModel.task_id.value == null) {
+            // This is a new task!
+            success = createNewTaskRequest(view)
+        } else {
+            success = updateCurrentTask(view)
+        }
+
+        if (success) {
+            // Empty data
+            this.taskDataViewModel.empty()
+
+            // Navigate back to main!
+            findNavController().navigateUp()
+        }
+    }
+
+    private fun onDeletePress(view: View) {
+        if (taskDataViewModel.task_id.value == null) {
+            this.taskDataViewModel.empty()
+            findNavController().navigateUp()
+            return
+        }
+
+        // Process deletion
+        val formBody = FormBody.Builder()
+            .add("task_id", taskDataViewModel.task_id.value?.toString()!!)
+            .build()
+
+        val url = URL(dataViewModel.createURL(arrayOf("tasks", "delete")))
+        val request = buildAuthedRequest(url, formBody)
+
+        this.client.newCall(request).execute().use {
+            if (!it.isSuccessful) {
+                Snackbar.make(view, "Unable to delete!", Snackbar.LENGTH_SHORT)
+                    .show()
             } else {
-                success = updateCurrentTask(view)
-            }
+                Snackbar.make(view, "Deleted task", Snackbar.LENGTH_SHORT)
+                    .show()
 
-            if (success) {
                 // Empty data
                 this.taskDataViewModel.empty()
-
-                // Navigate back to main!
-                findNavController().navigate(R.id.action_AddTaskScreen_to_MainScreen)
+                findNavController().navigateUp()
             }
         }
     }
@@ -99,7 +137,7 @@ class SecondFragment : Fragment() {
                 // Show error
                 var data = json.decodeFromString<Error>(response);
 
-                Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_LONG)
+                Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_SHORT)
                     .show()
             } else {
                 var data = json.decodeFromString<UserList>(response);
@@ -113,7 +151,11 @@ class SecondFragment : Fragment() {
                     listItems[idx] = it.name + " " + it.surname
                 }
 
-                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_multiple_choice, listItems)
+                val adapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_list_item_multiple_choice,
+                    listItems
+                )
                 listView.adapter = adapter
 
                 data.users.forEachIndexed { idx, it ->
@@ -160,12 +202,16 @@ class SecondFragment : Fragment() {
         return formBody.build()
     }
 
-    private fun buildRequest(url: URL): Request {
+    private fun buildAuthedRequest(url: URL, body: FormBody): Request {
         return Request.Builder()
             .url(url)
             .header("X-Authenticate", dataViewModel.jwt.value!!)
-            .post(buildFormBody())
+            .post(body)
             .build()
+    }
+
+    private fun buildRequest(url: URL): Request {
+        return buildAuthedRequest(url, buildFormBody())
     }
 
     private fun createNewTaskRequest(view: View): Boolean {
