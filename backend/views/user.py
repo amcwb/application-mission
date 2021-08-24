@@ -1,3 +1,4 @@
+from typing import List
 from flask.json import jsonify
 from backend import db
 from backend.authenticate import gen_auth_token, is_authenticated
@@ -22,7 +23,8 @@ def login():
         if user.check_password(password):
             # Generate JWT
             return jsonify({
-                "jwt": gen_auth_token(user.id)
+                "jwt": gen_auth_token(user.id),
+                "user_id": user.id
             }), 200
         
         # Wrong password
@@ -67,3 +69,17 @@ def create():
         "user_id": user.id,
         "jwt": gen_auth_token(user.id)
     })
+
+@users.route("/list", methods=["GET"])
+def list_(): 
+    users: List[User] = User.query.all()
+    data_users = []
+    for user in users:
+        data_users.append({
+            "user_id": int(user.id),
+            "name": user.name,
+            "surname": user.surname,
+            "email": None
+        })
+    
+    return jsonify({"users": data_users}), 200
