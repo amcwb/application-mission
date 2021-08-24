@@ -49,8 +49,12 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Get list of users and check users assigned
         getUserList()
-        setDataFromTaskView()
+
+        // Set data not pertaining to users in the view
+        setNonUserDataFromView()
+
         binding.saveTask.setOnClickListener {
             onSavePress(view)
         }
@@ -162,13 +166,14 @@ class SecondFragment : Fragment() {
                     // Is user in assigned users?
                     var isThisUserSelected = taskDataViewModel.assigned_users.value?.contains(it.user_id) == true
 
+                    // Set checked items here
                     listView.setItemChecked(idx, isThisUserSelected)
                 }
             }
         }
     }
 
-    private fun setDataFromTaskView() {
+    private fun setNonUserDataFromView() {
         // Set task content
         binding.editTaskContent.setText(taskDataViewModel.content.value ?: "Task Content")
     }
@@ -185,6 +190,7 @@ class SecondFragment : Fragment() {
             }
         }
 
+        // Create body with information
         var formBody = FormBody.Builder()
             .add("content", content)
             .add(
