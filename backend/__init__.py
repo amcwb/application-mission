@@ -16,4 +16,4 @@ app.register_blueprint(tasks.tasks, url_prefix='/tasks')
 app.register_blueprint(user.users, url_prefix='/users')
 
 # Run app
-app.run()
+app.run(port=80)

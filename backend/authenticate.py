@@ -1,9 +1,10 @@
+from flask.json import jsonify
 from backend.models.usertask import User
 import time
 
 import jwt
 from flask import current_app, session, request
-from jwt.exceptions import InvalidTokenError
+from jwt.exceptions import InvalidSignatureError, InvalidTokenError
 
 
 def gen_auth_token(user_id: int, expire_time: float = 0) -> str:
@@ -19,7 +20,7 @@ def gen_auth_token(user_id: int, expire_time: float = 0) -> str:
 def check_auth_token(token: str) -> int:
     try:
         result = jwt.decode(token, current_app.config.get("JWT_SECRET"), algorithms=["HS256"])
-    except InvalidTokenError:
+    except (InvalidTokenError, InvalidSignatureError):
         return None
     else:
         # Check user exists
@@ -43,7 +44,7 @@ def user_auth_check():
 def is_authenticated(f):
     def decorated(*args, **kwargs):
         if session["user"] is None:
-            return 403
+            return jsonify({"error": "You must be authenticated to do this"}), 403
         
         return f(*args, **kwargs)
     

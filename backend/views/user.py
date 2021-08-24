@@ -26,10 +26,10 @@ def login():
             }), 200
         
         # Wrong password
-        return jsonify({}), 403
+        return jsonify({"error": "Incorrect details"}), 403
     
     # User not found
-    return jsonify({}, 404)
+    return jsonify({"error": "That user does not exist"}), 400
 
 
 @users.route("/create", methods=["POST"])
