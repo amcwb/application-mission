@@ -1,2 +1,4 @@
 sqlalchemy
 pyjwt
+Flask
+Flask-SQLAlchemy
