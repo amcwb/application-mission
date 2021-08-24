@@ -105,8 +105,12 @@ def set_data():
         
         task.due = _get_datetime_or_none(request.form.get("due"), task.due)
         task.content = request.form.get("content", task.content)
-        assigned_users = request.form.get("assigned_users", map(lambda p: p.id, task.assigned_users))
-        task.assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
+
+        # Passing list in form?
+        assigned_users = request.form.get("assigned_users", None)
+        if assigned_users is not None:
+            assigned_users = map(int, assigned_users.split(",")) if assigned_users != "" else []
+            task.assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
         db.session.commit()
 
