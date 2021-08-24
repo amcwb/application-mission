@@ -82,7 +82,6 @@ def get_potential_assigned_users():
     assigned_users = request.form.get("assigned_users", None)
     if assigned_users is not None:
         assigned_users = map(int, assigned_users.split(",")) if assigned_users != "" else []
-    
     return assigned_users
 
 
@@ -112,7 +111,7 @@ def set_data():
 
         # Passing list in form?
         assigned_users = get_potential_assigned_users()
-        if assigned_users:
+        if assigned_users is not None:
             task.assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
         db.session.commit()
