@@ -17,8 +17,11 @@ def create():
 
     # We can assume session is populated as the user is authenticated
     author_id = session.get("user")
+    assigned_users = get_potential_assigned_users()
+    if assigned_users:
+        assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
-    task = Task(due=due, content=content, author_id=author_id)
+    task = Task(due=due, content=content, author_id=author_id, assigned_users=assigned_users)
     db.session.add(task)
     db.session.commit()
     
@@ -75,6 +78,14 @@ def list_():
     return jsonify({"tasks": data_tasks}), 200
 
 
+def get_potential_assigned_users():
+    assigned_users = request.form.get("assigned_users", None)
+    if assigned_users is not None:
+        assigned_users = map(int, assigned_users.split(",")) if assigned_users != "" else []
+    
+    return assigned_users
+
+
 def _get_datetime_or_none(*options):
     for option in options:
         try:
@@ -100,9 +111,8 @@ def set_data():
         task.content = request.form.get("content", task.content)
 
         # Passing list in form?
-        assigned_users = request.form.get("assigned_users", None)
-        if assigned_users is not None:
-            assigned_users = map(int, assigned_users.split(",")) if assigned_users != "" else []
+        assigned_users = get_potential_assigned_users()
+        if assigned_users:
             task.assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
         db.session.commit()
