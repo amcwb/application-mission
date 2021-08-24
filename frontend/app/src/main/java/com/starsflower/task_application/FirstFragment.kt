@@ -14,7 +14,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.starsflower.task_application.databinding.FragmentTaskListBinding
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
@@ -26,6 +25,7 @@ class FirstFragment : Fragment() {
 
     private var _binding: FragmentTaskListBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
+    private val taskDataViewModel: TaskDataViewModel by activityViewModels()
     private val client = OkHttpClient()
 
     private lateinit var listView: ListView
@@ -47,6 +47,24 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        displayTaskList(view)
+
+        binding.fabAddTask.setOnClickListener { view
+            taskDataViewModel.empty()
+
+            findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // Ignore unknown keys until due time data is implemented
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private fun displayTaskList(view: View) {
         this.listView = binding.tasksListView
 
         // Load tasks
@@ -57,38 +75,40 @@ class FirstFragment : Fragment() {
             .get()
             .build()
 
+        // Fetch tasks
         this.client.newCall(request).execute().use { it
             val response = it.body!!.string()
 
             if (!it.isSuccessful) {
                 // Show error
-                var data = Json.decodeFromString<Error>(response.toString());
+                var data = json.decodeFromString<Error>(response.toString());
                 Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
             } else {
-                // Ignore unknown keys until due data is implemented
-                var data = Json{ignoreUnknownKeys=true}.decodeFromString<TaskList>(response.toString());
+                var data = json.decodeFromString<TaskList>(response.toString());
 
                 val listItems = arrayOfNulls<String>(data.tasks.size)
+
+                // Set data in list to task details
                 data.tasks.forEachIndexed { idx, it ->
                     listItems[idx] = it.content
-//                    Snackbar.make(view, it.content, Snackbar.LENGTH_SHORT).show()
                 }
 
                 val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listItems)
                 listView.adapter = adapter
 
+                // On click listener!
+                listView.setOnItemClickListener { _, _, position, _ ->
+                    val element = data.tasks[position]
+
+                    // Populate page
+                    taskDataViewModel.setTaskID(element.task_id)
+                    taskDataViewModel.setContent(element.content)
+                    taskDataViewModel.setAuthorID(element.author_id ?: 0)
+                    taskDataViewModel.setAssignedUsers(element.assigned_users)
+
+                    findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
+                }
             }
         }
-
-        binding.fabAddTask.setOnClickListener { view
-            findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
-
-            Snackbar.make(view, dataViewModel.jwt.value!!, Snackbar.LENGTH_LONG).show()
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

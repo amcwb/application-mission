@@ -9,11 +9,16 @@ data class Error(val error: String)
 data class JWTResponse(val jwt: String)
 
 @Serializable
+data class TaskID(
+    val task_id: Int
+)
+
+@Serializable
 data class Task(
-    val task_id: Integer,
+    val task_id: Int,
     val content: String,
-    val author_id: Integer?,
-    val assigned_users: Array<Integer>
+    val author_id: Int?,
+    val assigned_users: Array<Int>
 )
 
 @Serializable

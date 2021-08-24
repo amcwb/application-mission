@@ -80,6 +80,9 @@ def _get_datetime_or_none(*options):
         try:
             if isinstance(option, datetime):
                 return option
+            
+            if isinstance(option, str):
+                option = int(option)
             return datetime.fromtimestamp(option)
         except TypeError:
             pass
@@ -93,20 +96,22 @@ def set_data():
     task_id = request.form.get("task_id")
     task = Task.query.filter_by(id=task_id).first()
     if task:
-        try:
-            data = json.loads(request.form.get("data"))
-        except ValueError:
-            return jsonify({
-                "error": "Invalid data"
-            }), 400
+        # try:
+        #     data = json.loads(request.form.get("data"))
+        # except ValueError:
+        #     return jsonify({
+        #         "error": "Invalid data"
+        #     }), 400
         
-        task.due = _get_datetime_or_none(data.get("due"), task.due)
-        task.content = data.get("content", task.content)
-        assigned_users = data.get("assigned_users", map(lambda p: p.id, task.assigned_users))
+        task.due = _get_datetime_or_none(request.form.get("due"), task.due)
+        task.content = request.form.get("content", task.content)
+        assigned_users = request.form.get("assigned_users", map(lambda p: p.id, task.assigned_users))
         task.assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
         db.session.commit()
 
         return jsonify({}), 200
     else:
-        return jsonify({}), 404
+        return jsonify({
+            "error": "Task not found!"
+        }), 404
