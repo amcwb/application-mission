@@ -2,7 +2,6 @@ package com.starsflower.task_application
 
 import android.Manifest
 import android.os.Bundle
-import android.util.JsonReader
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,21 +10,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.starsflower.task_application.databinding.FragmentLoginBinding
-import com.starsflower.task_application.databinding.FragmentTaskListBinding
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import java.io.InputStream
 
 class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null

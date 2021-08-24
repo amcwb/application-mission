@@ -96,13 +96,6 @@ def set_data():
     task_id = request.form.get("task_id")
     task = Task.query.filter_by(id=task_id).first()
     if task:
-        # try:
-        #     data = json.loads(request.form.get("data"))
-        # except ValueError:
-        #     return jsonify({
-        #         "error": "Invalid data"
-        #     }), 400
-        
         task.due = _get_datetime_or_none(request.form.get("due"), task.due)
         task.content = request.form.get("content", task.content)
 

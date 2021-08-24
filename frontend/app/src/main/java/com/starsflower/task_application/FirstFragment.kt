@@ -127,6 +127,6 @@ class FirstFragment : Fragment() {
             findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
         }
 
-        Utils.setListViewHeightBasedOnChildren(listView)
+        Utils.setListViewHeightBasedOnChildren(listView, max30 = true)
     }
 }

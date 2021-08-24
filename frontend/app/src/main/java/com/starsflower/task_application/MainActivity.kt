@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         val policy = ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
+
         // Set URL
         dataViewModel.setURL("10.0.2.2")
 

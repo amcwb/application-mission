@@ -122,8 +122,6 @@ class SecondFragment : Fragment() {
 
                     listView.setItemChecked(idx, isThisUserSelected)
                 }
-
-                Utils.setListViewHeightBasedOnChildren(listView)
             }
         }
     }

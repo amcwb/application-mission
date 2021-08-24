@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.starsflower.task_application.FirstFragment"
-        android:label="@string/first_fragment_label"
+        android:label="Tasks"
         tools:layout="@layout/fragment_task_list">
 
         <action
@@ -18,7 +18,7 @@
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.starsflower.task_application.SecondFragment"
-        android:label="@string/second_fragment_label"
+        android:label="Create/edit task"
         tools:layout="@layout/fragment_add_task">
 
         <action
