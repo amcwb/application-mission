@@ -18,6 +18,7 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -27,7 +28,6 @@ class AddTaskFragment : Fragment() {
     private var _binding: FragmentAddTaskBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
     private val taskDataViewModel: TaskDataViewModel by activityViewModels()
-    private val client = OkHttpClient()
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -99,7 +99,7 @@ class AddTaskFragment : Fragment() {
         val url = URL(dataViewModel.createURL(arrayOf("tasks", "delete")))
         val request = buildAuthedRequest(url, formBody)
 
-        this.client.newCall(request).execute().use {
+        Utils.makeSafeRequest(request, requireView()) {
             if (!it.isSuccessful) {
                 Snackbar.make(view, "Unable to delete!", Snackbar.LENGTH_SHORT)
                     .show()
@@ -134,9 +134,7 @@ class AddTaskFragment : Fragment() {
             .build()
 
         // Fetch tasks
-        this.client.newCall(request).execute().use { it
-            val response = it.body!!.string()
-
+        Utils.makeSafeRequest(request, requireView()) {
             if (!it.isSuccessful) {
                 // Error details are not provided specifically.
                 // json.decodeFromString<Error>(response);
@@ -144,7 +142,7 @@ class AddTaskFragment : Fragment() {
                 Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_SHORT)
                     .show()
             } else {
-                var data = json.decodeFromString<UserList>(response);
+                var data = json.decodeFromString<UserList>(it.body!!.string());
 
                 val listItems = arrayOfNulls<String>(data.users.size)
 
@@ -228,24 +226,21 @@ class AddTaskFragment : Fragment() {
         // Try request
         var request = buildRequest(url)
 
-        this.client.newCall(request).execute().use { it
-            val response = it.body!!.string()
-
+        return Utils.makeSafeRequest(request, requireView()) {
             if (!it.isSuccessful) {
                 // Show error
-                var data = Json.decodeFromString<Error>(response);
+                var data = Json.decodeFromString<Error>(it.body!!.string());
                 Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
 
-                return false
+                return@makeSafeRequest false
             } else {
                 // Consume response, may be useful later?
-                Json.decodeFromString<TaskID>(response);
+                Json.decodeFromString<TaskID>(it.body!!.string());
                 Snackbar.make(view, "Created task successfully", Snackbar.LENGTH_SHORT).show()
 
-                return true
+                return@makeSafeRequest true
             }
         }
-
     }
 
     private fun updateCurrentTask(view: View): Boolean {
@@ -255,20 +250,18 @@ class AddTaskFragment : Fragment() {
         // Try request
         var request = buildRequest(url)
 
-        this.client.newCall(request).execute().use { it
-            val response = it.body!!.string()
-
+        return Utils.makeSafeRequest(request, requireView()) {
             if (!it.isSuccessful) {
                 // Show error
-                var data = Json.decodeFromString<Error>(response);
+                var data = Json.decodeFromString<Error>(it.body!!.string());
                 Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
 
-                return false
+                return@makeSafeRequest false
             } else {
                 // Updating returns no data
                 Snackbar.make(view, "Task updated successfully", Snackbar.LENGTH_SHORT).show()
 
-                return true
+                return@makeSafeRequest true
             }
         }
     }

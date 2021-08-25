@@ -25,7 +25,6 @@ class TaskListFragment : Fragment() {
     private var _binding: FragmentTaskListBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
     private val taskDataViewModel: TaskDataViewModel by activityViewModels()
-    private val client = OkHttpClient()
 
     private lateinit var tasksListView: ListView
     private lateinit var notAssignedTasksListView: ListView
@@ -77,15 +76,13 @@ class TaskListFragment : Fragment() {
             .build()
 
         // Fetch tasks
-        this.client.newCall(request).execute().use { it
-            val response = it.body!!.string()
-
+        Utils.makeSafeRequest(request, view) {
             if (!it.isSuccessful) {
                 // Show error
-                var data = json.decodeFromString<Error>(response.toString());
+                var data = json.decodeFromString<Error>(it.body!!.string());
                 Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
             } else {
-                var data = json.decodeFromString<TaskList>(response.toString());
+                var data = json.decodeFromString<TaskList>(it.body!!.string());
                 var assignedTasks = ArrayList<Task>()
                 var notAssignedTasks = ArrayList<Task>()
 
@@ -127,6 +124,6 @@ class TaskListFragment : Fragment() {
             findNavController().navigate(R.id.action_MainScreen_to_AddTaskScreen)
         }
 
-        Utils.setListViewHeightBasedOnChildren(listView, max30 = true)
+        Utils.setListViewHeightBasedOnChildren(listView, true)
     }
 }

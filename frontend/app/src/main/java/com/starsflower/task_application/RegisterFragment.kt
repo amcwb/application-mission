@@ -16,11 +16,11 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
-    private val client = OkHttpClient()
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -72,15 +72,13 @@ class RegisterFragment : Fragment() {
                 .post(formBody)
                 .build()
 
-            this.client.newCall(request).execute().use { it
-                val response = it.body!!.string()
-
+            Utils.makeSafeRequest(request, view) {
                 if (!it.isSuccessful) {
                     // Show error
-                    var data = Json.decodeFromString<Error>(response.toString());
+                    var data = Json.decodeFromString<Error>(it.body!!.string());
                     Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
                 } else {
-                    var data = Json.decodeFromString<JWTResponse>(response.toString());
+                    var data = Json.decodeFromString<JWTResponse>(it.body!!.string());
                     dataViewModel.setJWT(data.jwt)
                     dataViewModel.setUserID(data.user_id)
                     Snackbar.make(view, "Created user successfully", Snackbar.LENGTH_SHORT).show()
