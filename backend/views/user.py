@@ -71,6 +71,7 @@ def create():
     })
 
 @users.route("/list", methods=["GET"])
+@is_authenticated
 def list_(): 
     users: List[User] = User.query.all()
     data_users = []

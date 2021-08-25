@@ -9,8 +9,8 @@ from flask import Blueprint, current_app, render_template, request, session
 tasks = Blueprint("tasks", __name__)
 
 
-@is_authenticated
 @tasks.route("/create", methods=["POST"])
+@is_authenticated
 def create():
     due = request.form.get("due", None)
     content = request.form.get("content")
@@ -21,7 +21,7 @@ def create():
     if assigned_users:
         assigned_users = list(map(lambda p: User.query.filter_by(id=p).first(), assigned_users))
 
-    task = Task(due=due, content=content, author_id=author_id, assigned_users=assigned_users)
+    task = Task(due=due, content=content, author_id=author_id, assigned_users=assigned_users or [])
     db.session.add(task)
     db.session.commit()
     
@@ -30,8 +30,8 @@ def create():
     }), 200
 
 
-@is_authenticated
 @tasks.route("/delete", methods=["POST"])
+@is_authenticated
 def delete():
     task_id = request.form.get("task_id")
 
@@ -45,8 +45,8 @@ def delete():
         return jsonify({}), 404
 
 
-@is_authenticated
 @tasks.route("/info", methods=["GET"])
+@is_authenticated
 def info():
     task_id = request.form.get("task_id")
     task = Task.query.filter_by(id=task_id).first()
@@ -61,8 +61,8 @@ def info():
     else:
         return jsonify({}), 404
 
-@is_authenticated
 @tasks.route("/list", methods=["GET"])
+@is_authenticated
 def list_():
     tasks = Task.query.all()
     data_tasks = []
@@ -100,8 +100,8 @@ def _get_datetime_or_none(*options):
     return None
 
 
-@is_authenticated
 @tasks.route("/set_data", methods=["POST"])
+@is_authenticated
 def set_data():
     task_id = request.form.get("task_id")
     task = Task.query.filter_by(id=task_id).first()
