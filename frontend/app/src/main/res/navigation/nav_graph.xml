@@ -6,24 +6,24 @@
     app:startDestination="@id/loginFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.starsflower.task_application.FirstFragment"
+        android:id="@+id/TaskListFragment"
+        android:name="com.starsflower.task_application.TaskListFragment"
         android:label="Tasks"
         tools:layout="@layout/fragment_task_list">
 
         <action
             android:id="@+id/action_MainScreen_to_AddTaskScreen"
-            app:destination="@id/SecondFragment" />
+            app:destination="@id/AddTaskFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.starsflower.task_application.SecondFragment"
+        android:id="@+id/AddTaskFragment"
+        android:name="com.starsflower.task_application.AddTaskFragment"
         android:label="Create/edit task"
         tools:layout="@layout/fragment_add_task">
 
         <action
             android:id="@+id/action_AddTaskScreen_to_MainScreen"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/TaskListFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -32,6 +32,18 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_LoginFragment_to_ListFragment"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/TaskListFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.starsflower.task_application.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_registerFragment_to_FirstFragment"
+            app:destination="@id/TaskListFragment" />
     </fragment>
 </navigation>

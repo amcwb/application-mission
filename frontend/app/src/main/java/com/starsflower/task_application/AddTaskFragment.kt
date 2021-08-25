@@ -22,7 +22,7 @@ import java.net.URL
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-class SecondFragment : Fragment() {
+class AddTaskFragment : Fragment() {
 
     private var _binding: FragmentAddTaskBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
@@ -138,8 +138,8 @@ class SecondFragment : Fragment() {
             val response = it.body!!.string()
 
             if (!it.isSuccessful) {
-                // Show error
-                var data = json.decodeFromString<Error>(response);
+                // Error details are not provided specifically.
+                // json.decodeFromString<Error>(response);
 
                 Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_SHORT)
                     .show()
@@ -164,7 +164,8 @@ class SecondFragment : Fragment() {
 
                 data.users.forEachIndexed { idx, it ->
                     // Is user in assigned users?
-                    var isThisUserSelected = taskDataViewModel.assigned_users.value?.contains(it.user_id) == true
+                    var isThisUserSelected =
+                        taskDataViewModel.assigned_users.value?.contains(it.user_id) == true
 
                     // Set checked items here
                     listView.setItemChecked(idx, isThisUserSelected)

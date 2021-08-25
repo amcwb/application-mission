@@ -20,7 +20,7 @@ import java.net.URL
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class FirstFragment : Fragment() {
+class TaskListFragment : Fragment() {
 
     private var _binding: FragmentTaskListBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()

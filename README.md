@@ -38,13 +38,6 @@ Les variables de l'environment sont:
 - `SQLALCHEMY_DATABASE_URI`: L'adresse de la base de données (si aucune adresse est fournie, il va utiliser une base de données SQLite en memoire)
 - `SECRET_KEY`: Le secret utilisé par Flask pour configuer les jetons session (non utilisé par l'application, mais quand même nécessaire). Si pas fourni, il sera généré automatiquement. Pas comme le `JWT_SECRET`, il n'est pas forcément suggeré de le fournir.
 
-### Informations importantes
-Quand vous le lancez pour la première fois, il n'y aura pas d'utilisateur. Vous devriez en créer un en faisant une rêquete directement à l'API avant de commencer.
-
-Par exemple:
-
-![Postman Screenshot](screenshots/postman.png)
-
 # English
 This is an application for assigning tasks to users and modifying them after they are done. This application was made for a job task, *and is licensed under the AGPL.*
 
@@ -81,10 +74,3 @@ The environment variables are:
 - `JWT_SECRET`: The secret used to set up the JWT tokens. (If not supplied, it will be generated at each run. Any previous tokens will be invalidated).
 - `SQLALCHEMY_DATABASE_URI`: The database address (if no address is provided, it will use a SQLite database in memory)
 - `SECRET_KEY`: The secret used by Flask to set up the session tokens (not used by the application, but still needed). If not provided, it will be generated automatically. Unlike the `JWT_SECRET`, it is not necessarily suggested to provide it.
-
-### Important info
-When launching it for the first time, there are no users on the database. You should create one yourself by using the API directly.
-
-For example:
-
-![Postman Screenshot](screenshots/postman.png)

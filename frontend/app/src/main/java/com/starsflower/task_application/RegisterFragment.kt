@@ -9,16 +9,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import com.starsflower.task_application.databinding.FragmentLoginBinding
-import java.net.URL
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import com.starsflower.task_application.databinding.FragmentRegisterBinding
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.net.URL
 
-class LoginFragment : Fragment() {
-    private var _binding: FragmentLoginBinding? = null
+class RegisterFragment : Fragment() {
+    private var _binding: FragmentRegisterBinding? = null
     private val dataViewModel: MainDataViewModel by activityViewModels()
     private val client = OkHttpClient()
 
@@ -34,7 +34,7 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -47,18 +47,24 @@ class LoginFragment : Fragment() {
         )
 
         // LOGIN!
-        binding.loginButton.setOnClickListener {
+        binding.registerButton.setOnClickListener {
             // Get input
-            val email = binding.emailAddressInput.text.toString()
-            val password = binding.passwordInput.text.toString()
+            val name = binding.registerNameInput.text.toString()
+            val surname = binding.registerSurnameInput.text.toString()
+            val email = binding.registerEmailAddressInput.text.toString()
+            val password = binding.registerPasswordInput.text.toString()
+            val repeatPassword = binding.registerRepeatPasswordInput.text.toString()
 
             // Create URL
-            val url = URL(dataViewModel.createURL(arrayOf("users", "login")))
+            val url = URL(dataViewModel.createURL(arrayOf("users", "create")))
 
             // Try login
             var formBody = FormBody.Builder()
+                .add("name", name)
+                .add("surname", surname)
                 .add("email", email)
                 .add("password", password)
+                .add("confirm_password", repeatPassword)
                 .build()
 
             var request = Request.Builder()
@@ -71,22 +77,17 @@ class LoginFragment : Fragment() {
 
                 if (!it.isSuccessful) {
                     // Show error
-                    var data = Json.decodeFromString<Error>(response);
+                    var data = Json.decodeFromString<Error>(response.toString());
                     Snackbar.make(view, data.error, Snackbar.LENGTH_SHORT).show()
                 } else {
-                    var data = Json.decodeFromString<JWTResponse>(response);
+                    var data = Json.decodeFromString<JWTResponse>(response.toString());
                     dataViewModel.setJWT(data.jwt)
                     dataViewModel.setUserID(data.user_id)
-                    Snackbar.make(view, "Logged in successfully", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(view, "Created user successfully", Snackbar.LENGTH_SHORT).show()
 
-                    findNavController().navigate(R.id.action_LoginFragment_to_ListFragment)
+                    findNavController().navigate(R.id.action_registerFragment_to_FirstFragment)
                 }
             }
-        }
-
-        // Register
-        binding.goToRegister.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
     }
 
@@ -94,5 +95,4 @@ class LoginFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
 }
