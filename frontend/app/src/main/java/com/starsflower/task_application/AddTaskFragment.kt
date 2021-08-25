@@ -1,12 +1,17 @@
 package com.starsflower.task_application
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.DatePicker
 import android.widget.ListView
+import androidx.annotation.RequiresApi
 import androidx.core.view.get
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -18,6 +23,10 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -46,6 +55,7 @@ class AddTaskFragment : Fragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -61,6 +71,15 @@ class AddTaskFragment : Fragment() {
 
         binding.deleteTask.setOnClickListener {
             onDeletePress(view)
+        }
+
+        // Date time input
+        binding.pickDate.setOnClickListener {
+            onDatePick(view)
+        }
+
+        binding.pickTime.setOnClickListener {
+            onTimePick(view)
         }
     }
 
@@ -114,6 +133,53 @@ class AddTaskFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun onDatePick(view: View) {
+        var c = Calendar.getInstance();
+        var mYear = c.get(Calendar.YEAR);
+        var mMonth = c.get(Calendar.MONTH);
+        var mDay = c.get(Calendar.DAY_OF_MONTH);
+
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            { _, year, month, day ->
+                // Pad month for user readability
+                setDateText(year, month, day)
+            },
+            mYear, mMonth, mDay)
+
+        datePickerDialog.show()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun onTimePick(view: View) {
+        var c = Calendar.getInstance();
+        var mHour = c.get(Calendar.HOUR_OF_DAY);
+        var mMinute = c.get(Calendar.MINUTE);
+
+        val timePickerDialog = TimePickerDialog(
+            requireContext(),
+            { _, hour, minute ->
+                // Pad for user readability
+                setHourMinuteText(hour, minute)
+            },
+            mHour, mMinute, true)
+
+        timePickerDialog.show()
+    }
+
+    private fun setHourMinuteText(hour: Int, minute: Int) {
+        val padHour = hour.toString().padStart(2, '0')
+        val padMinute = minute.toString().padStart(2, '0')
+        binding.editTaskTime.setText("$padHour:$padMinute")
+    }
+
+    private fun setDateText(year: Int, month: Int, day: Int) {
+        // Pad month for user readability
+        val padMonth = month.toString().padStart(2, '0')
+        binding.editTaskDate.setText("$year-$padMonth-$day")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -135,8 +201,6 @@ class AddTaskFragment : Fragment() {
 
         // Fetch tasks
         this.client.newCall(request).execute().use { it
-            val response = it.body!!.string()
-
             if (!it.isSuccessful) {
                 // Error details are not provided specifically.
                 // json.decodeFromString<Error>(response);
@@ -144,6 +208,7 @@ class AddTaskFragment : Fragment() {
                 Snackbar.make(requireView(), "Unable to load user list for assigning", Snackbar.LENGTH_SHORT)
                     .show()
             } else {
+                val response = it.body!!.string()
                 var data = json.decodeFromString<UserList>(response);
 
                 val listItems = arrayOfNulls<String>(data.users.size)
@@ -177,6 +242,21 @@ class AddTaskFragment : Fragment() {
     private fun setNonUserDataFromView() {
         // Set task content
         binding.editTaskContent.setText(taskDataViewModel.content.value ?: "Task Content")
+
+        // Get due date
+        if (taskDataViewModel.due.value != null) {
+            var c = Calendar.getInstance();
+            c.time = Date(taskDataViewModel.due.value!! * 1000)
+
+            var mYear = c.get(Calendar.YEAR);
+            var mMonth = c.get(Calendar.MONTH);
+            var mDay = c.get(Calendar.DAY_OF_MONTH);
+            var mHour = c.get(Calendar.HOUR_OF_DAY);
+            var mMinute = c.get(Calendar.MINUTE);
+
+            setDateText(mYear, mMonth, mDay)
+            setHourMinuteText(mHour, mMinute)
+        }
     }
 
     private fun buildFormBody(): FormBody {
@@ -190,6 +270,9 @@ class AddTaskFragment : Fragment() {
                 assignedUserIds.add(user.user_id)
             }
         }
+
+        // Get due date in seconds
+        var date = LocalDate.parse(binding.pickDate.text, DateTimeFormatter.ISO_DATE)
 
         // Create body with information
         var formBody = FormBody.Builder()

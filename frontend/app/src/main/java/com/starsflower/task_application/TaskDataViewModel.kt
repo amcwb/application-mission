@@ -10,8 +10,8 @@ class TaskDataViewModel: ViewModel() {
     private var _task_id: MutableLiveData<Int?> = MutableLiveData()
     val task_id: LiveData<Int?> get() = _task_id
 
-    private var _due: MutableLiveData<Int?> = MutableLiveData()
-    val due: LiveData<Int?> get() = _due
+    private var _due: MutableLiveData<Long?> = MutableLiveData()
+    val due: LiveData<Long?> get() = _due
 
     private var _content: MutableLiveData<String?> = MutableLiveData()
     val content: LiveData<String?> get() = _content
@@ -34,7 +34,7 @@ class TaskDataViewModel: ViewModel() {
         this._task_id.value = task_id
     }
 
-    fun setDue(due: Int?) {
+    fun setDue(due: Long?) {
         this._due.value = due
     }
 
