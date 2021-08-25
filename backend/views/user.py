@@ -36,11 +36,17 @@ def login():
 
 @users.route("/create", methods=["POST"])
 def create():
-    name = request.form.get("name")
-    surname = request.form.get("surname")
-    email = request.form.get("email")
-    password = request.form.get("password")
+    name = request.form.get("name", "")
+    surname = request.form.get("surname", "")
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
     confirm_password = request.form.get("confirm_password")
+
+    # Ensure data isn't empty
+    if any(val.strip() == "" for val in [name, surname, email, password]):
+        return jsonify({
+            "error": "Information can not be empty"
+        }), 400
 
     # Make sure account doesn't exist already
     user = User.query.filter_by(email=email).first()
