@@ -2,7 +2,7 @@
 
 
 # Application Mission
-Ceci est une application pour affecter des tâches à des utilisateurs et les modifier après les avoir faits. C'est application était fait pour une mission d'un job, *et est sous le license AGPL.*
+Ceci est une application pour affecter des tâches à des utilisateurs et les modifier après les avoir faits. Cette application était fait pour une mission d'un job, *et est sous le license AGPL.*
 
 Cette application n'est pas prête pour production, et est actuellement seulement approprié pour localhost.
 
